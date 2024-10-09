@@ -296,13 +296,20 @@ app.post(
 app.post(
   "/api/users/resetpassword",
   expressAsyncHandler(async (req, res) => {
-    const findUser = await User.findOne({ email: req.body.email });
-    if (findUser) {
+    try {
+      const findUser = await User.findOne({ email: req.body.email });
+
+      // Check if user exists
+      if (!findUser) {
+        return res.status(401).send({
+          message: "User with this email doesn't exist",
+        });
+      }
+
       const legit = forgotPasswordToken(findUser);
 
-      res.send({ _id: findUser._id, email: findUser.email });
-
-      transporter.sendMail({
+      // Send email
+      await transporter.sendMail({
         to: findUser.email,
         from: "souradeepgharami2000@gmail.com",
         subject: "Forgot Password",
@@ -312,11 +319,12 @@ app.post(
             `,
       });
 
-      return;
+      res.send({ _id: findUser._id, email: findUser.email });
+    } catch (error) {
+      res.status(500).send({
+        message: "An error occurred while processing your request.",
+      });
     }
-    res.status(401).send({
-      message: "User with this email doesn't exists",
-    });
   })
 );
 
