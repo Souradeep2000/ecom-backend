@@ -186,7 +186,8 @@ app.get(
     try {
       const features = new APIfeatures(dbCards.find(), req.query)
         .filtering()
-        .sorting();
+        .sorting()
+        .pagination();
       const products = await features.query;
 
       res.send({ result: products.length, products: products });
@@ -530,7 +531,7 @@ class APIfeatures {
 
   pagination() {
     const page = this.queryString.page * 1 || 1;
-    const limit = this.queryString.limit * 1 || 3;
+    const limit = this.queryString.limit * 1 || 5;
     const skip = (page - 1) * limit;
     this.query = this.query.skip(skip).limit(limit);
     return this;
